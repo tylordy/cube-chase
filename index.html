@@ -216,6 +216,7 @@ html.rot body{position:fixed;top:0;left:0;width:var(--rw);height:var(--rh);trans
     <h2 data-i18n="skins">Skins</h2>
     <p class="lede" data-i18n="skinintro">Change how your cube looks. Buy a skin once and switch to it any time.</p>
     <div class="shop" id="skinList"></div>
+    <div class="row"><input id="secretIn" class="code" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="····" aria-label="Secret code" style="width:7em"></div>
     <div class="row"><button class="btn primary" id="shopBack" data-i18n="back">Back</button></div>
   </div>
 </div>
@@ -393,7 +394,7 @@ const ZH = {
   '{team} TEAM · ':'{team}隊 · ', 'CO-OP · ':'合作 · ',
   "Both teams went down together. It's a draw!":'兩隊同時全滅，平手！', '{team} team wins! ':'{team}隊獲勝！',
   'Nice work, your team survived.':'幹得好，你的隊伍活下來了。', 'Your team was knocked out first.':'你的隊伍先被淘汰了。',
-  'DRAW':'平手', 'MUSIC':'音樂', 'Picked by Tylor':'由駱廷聿挑選', 'Tylor':'駱廷聿', 'CREATED BY':'創作者', 'GAME DESIGN':'遊戲設計', 'IDEAS AND TESTING':'點子與測試',
+  'DRAW':'平手', 'SECRET CODE! +100 COINS':'秘密代碼！+100 金幣', 'WRONG CODE':'代碼錯誤', 'MUSIC':'音樂', 'Picked by Tylor':'由駱廷聿挑選', 'Tylor':'駱廷聿', 'CREATED BY':'創作者', 'GAME DESIGN':'遊戲設計', 'IDEAS AND TESTING':'點子與測試',
   'MAPS':'地圖', 'BUILT WITH':'製作工具', 'SPECIAL THANKS':'特別感謝', 'Everyone who plays with Tylor':'每一位和駱廷聿一起玩的朋友',
   'THANKS FOR PLAYING!':'謝謝你來玩！', 'TAP OR PRESS ANY KEY TO SKIP':'點一下或按任意鍵跳過', 'You owe {n}. Earn it back to buy again.':'你欠 {n} 金幣，賺回來才能再購買。', 'You have no coins to send.':'你沒有金幣可以送。', 'FIREBALL READY':'火球就緒', 'NO BOTS. HUNT THE OTHER TEAM! FREE FIREBALL EVERY 8 SECONDS':'沒有機器人，去追捕敵隊！每 8 秒一顆免費火球', 'YOU WIN!':'你贏了！', 'Next goal':'下一個目標', 'GOAL {g} · {t}':'目標 {g} · {t}',
   'You survived {n}! +{b} bonus coins. Next goal: {m}.':'你撐過了 {n}！獎勵 {b} 金幣。下一個目標：{m}。', 'YOU LOSE':'你輸了',
@@ -1337,6 +1338,17 @@ function renderModes(){
 }
 renderModes();
 $('shopBtn').onclick=()=>openShop('menu');
+/* secret code: the right code adds 100 coins (only a hash of it is stored here) */
+const SECRET_HASH = 8037547;
+function trySecret(){
+  const v=$('secretIn').value.trim(); $('secretIn').value='';
+  if (!v) return;
+  let h=7; for (const c of v) h=(Math.imul(h,31)+c.charCodeAt(0))>>>0;
+  if (h===SECRET_HASH){ save.coins+=100; persist(); renderShop(); sfx('win'); toast(L('SECRET CODE! +100 COINS')); }
+  else { sfx('spawn'); toast(L('WRONG CODE')); }
+}
+$('secretIn').addEventListener('keydown',e=>{ e.stopPropagation(); if (e.key==='Enter') trySecret(); });
+$('secretIn').addEventListener('input',()=>{ if ($('secretIn').value.trim().length>=4) trySecret(); });
 $('shopBack').onclick=()=>{ if (shopReturn==='over'){ show('over'); state='over'; } else openMenu(); };
 $('retryBtn').onclick=()=>{ if (NET.mode) openOnline(); else startGame(); };
 $('overShop').onclick=()=>openShop('over');

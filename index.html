@@ -283,6 +283,14 @@ html.rot body{position:fixed;top:0;left:0;width:var(--rw);height:var(--rh);trans
 
 <div id="langPick" hidden><p>CHOOSE YOUR LANGUAGE<br><span lang="zh-Hant" style="font-family:'DotGothic16','Noto Sans TC',monospace;font-size:18px">請選擇語言</span></p><div class="row"><button class="btn" id="pickEn" lang="en">English</button><button class="btn" id="pickZh" lang="zh-Hant">繁體中文</button></div></div>
 <div id="credits" hidden aria-label="Credits"><div class="roll" id="creditRoll"></div><span class="skip" id="creditSkip"></span></div>
+<div id="coinMaker" class="overlay" style="z-index:25;display:grid;place-items:center" hidden>
+  <div class="sheet" style="max-width:420px;background:var(--panel);border:3px solid var(--gold);padding:20px;box-shadow:0 0 24px rgba(255,212,0,.35)">
+    <h1 class="logo" style="font-size:clamp(24px,6vw,34px);color:var(--gold);text-shadow:3px 3px 0 #7a5c00" data-i18n="cmtitle">COIN MAKER</h1>
+    <label class="field" for="cmAmount"><span data-i18n="cmask">HOW MANY COINS DO YOU WANT?</span><input id="cmAmount" type="number" min="1" max="99999" step="1" value="100" inputmode="numeric"></label>
+    <div class="row"><button class="btn" data-cm="100">100</button><button class="btn" data-cm="500">500</button><button class="btn" data-cm="1000">1000</button></div>
+    <div class="row"><button class="btn primary" id="cmGive" data-i18n="cmgive">Get coins</button><button class="btn" id="cmCancel" data-i18n="cmcancel">Cancel</button></div>
+  </div>
+</div>
 <div id="toast"></div>
 
 
@@ -362,7 +370,7 @@ const ZH_STATIC = {
   onlinelogo:'<span class="b">線上</span> <span class="r">對戰</span>',
   onintro:'最多和 9 位朋友一起玩。<b>挑戰機器人</b>：大家組隊對抗機器人。<b>隊伍對戰</b>：藍隊對金隊，每隊最多 5 人。沒有機器人，玩家互相追捕。每人每 8 秒獲得一顆免費火球，火球能淘汰敵隊玩家，最後還有人存活的隊伍獲勝。由一人建立房間並分享代碼。',
   yourname:'你的名字', create:'建立房間', join:'加入房間', room:'房間', game:'玩法', coop:'挑戰機器人', vs:'隊伍對戰',
-  map:'地圖', mode:'難度', players:'玩家', joinblue:'加入藍隊', joingold:'加入金隊', start:'開始', leave:'離開房間', giftto:'送金幣給', amount:'數量', send:'送出',
+  map:'地圖', mode:'難度', players:'玩家', joinblue:'加入藍隊', joingold:'加入金隊', start:'開始', leave:'離開房間', cmtitle:'金幣製造機', cmask:'你想要多少金幣？', cmgive:'領取金幣', cmcancel:'取消', giftto:'送金幣給', amount:'數量', send:'送出',
 };
 const ZH = {
   'SOUND FX ON':'音效：開', 'SOUND FX OFF':'音效：關', 'MUSIC ON':'音樂：開', 'MUSIC OFF':'音樂：關',
@@ -394,7 +402,7 @@ const ZH = {
   '{team} TEAM · ':'{team}隊 · ', 'CO-OP · ':'合作 · ',
   "Both teams went down together. It's a draw!":'兩隊同時全滅，平手！', '{team} team wins! ':'{team}隊獲勝！',
   'Nice work, your team survived.':'幹得好，你的隊伍活下來了。', 'Your team was knocked out first.':'你的隊伍先被淘汰了。',
-  'DRAW':'平手', 'SECRET CODE! +100 COINS':'秘密代碼！+100 金幣', 'WRONG CODE':'代碼錯誤', 'MUSIC':'音樂', 'Picked by Tylor':'由駱廷聿挑選', 'Tylor':'駱廷聿', 'CREATED BY':'創作者', 'GAME DESIGN':'遊戲設計', 'IDEAS AND TESTING':'點子與測試',
+  'DRAW':'平手', '+{n} COINS!':'+{n} 金幣！', 'WRONG CODE':'代碼錯誤', 'MUSIC':'音樂', 'Picked by Tylor':'由駱廷聿挑選', 'Tylor':'駱廷聿', 'CREATED BY':'創作者', 'GAME DESIGN':'遊戲設計', 'IDEAS AND TESTING':'點子與測試',
   'MAPS':'地圖', 'BUILT WITH':'製作工具', 'SPECIAL THANKS':'特別感謝', 'Everyone who plays with Tylor':'每一位和駱廷聿一起玩的朋友',
   'THANKS FOR PLAYING!':'謝謝你來玩！', 'TAP OR PRESS ANY KEY TO SKIP':'點一下或按任意鍵跳過', 'You owe {n}. Earn it back to buy again.':'你欠 {n} 金幣，賺回來才能再購買。', 'You have no coins to send.':'你沒有金幣可以送。', 'FIREBALL READY':'火球就緒', 'NO BOTS. HUNT THE OTHER TEAM! FREE FIREBALL EVERY 8 SECONDS':'沒有機器人，去追捕敵隊！每 8 秒一顆免費火球', 'YOU WIN!':'你贏了！', 'Next goal':'下一個目標', 'GOAL {g} · {t}':'目標 {g} · {t}',
   'You survived {n}! +{b} bonus coins. Next goal: {m}.':'你撐過了 {n}！獎勵 {b} 金幣。下一個目標：{m}。', 'YOU LOSE':'你輸了',
@@ -1344,9 +1352,18 @@ function trySecret(){
   const v=$('secretIn').value.trim(); $('secretIn').value='';
   if (!v) return;
   let h=7; for (const c of v) h=(Math.imul(h,31)+c.charCodeAt(0))>>>0;
-  if (h===SECRET_HASH){ save.coins+=100; persist(); renderShop(); sfx('win'); toast(L('SECRET CODE! +100 COINS')); }
+  if (h===SECRET_HASH){ sfx('power'); $('cmAmount').value=100; $('coinMaker').hidden=false; try { $('cmAmount').focus({preventScroll:true}); $('cmAmount').select(); } catch(e){} }
   else { sfx('spawn'); toast(L('WRONG CODE')); }
 }
+/* coin maker popup: opens after the secret code, asks how many coins */
+function giveCoins(){
+  const n=Math.floor(+$('cmAmount').value);
+  if (!(n>=1)) { toast(L('Pick an amount from 1 to {n}.',{n:99999})); return; }
+  const k=Math.min(99999,n); save.coins+=k; persist(); $('coinMaker').hidden=true; renderShop(); sfx('win'); toast(L('+{n} COINS!',{n:k}));
+}
+$('cmGive').onclick=giveCoins; $('cmCancel').onclick=()=>{ $('coinMaker').hidden=true; };
+document.querySelectorAll('[data-cm]').forEach(b=>b.onclick=()=>{ $('cmAmount').value=b.dataset.cm; });
+$('cmAmount').addEventListener('keydown',e=>{ e.stopPropagation(); if (e.key==='Enter') giveCoins(); if (e.key==='Escape') $('coinMaker').hidden=true; });
 $('secretIn').addEventListener('keydown',e=>{ e.stopPropagation(); if (e.key==='Enter') trySecret(); });
 $('secretIn').addEventListener('input',()=>{ if ($('secretIn').value.trim().length>=4) trySecret(); });
 $('shopBack').onclick=()=>{ if (shopReturn==='over'){ show('over'); state='over'; } else openMenu(); };

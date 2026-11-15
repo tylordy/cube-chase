@@ -216,7 +216,7 @@ input.code{width:8.5em;text-transform:uppercase;letter-spacing:.2em}
   <div class="sheet">
     <h1 class="logo" style="font-size:clamp(28px,6vw,48px)" data-i18n="onlinelogo"><span class="b">ONLINE</span> <span class="r">PLAY</span></h1>
     <div id="onSetup" class="sheet" style="gap:16px;margin:0">
-      <p class="lede" data-i18n="onintro">Play with up to 9 friends. <b>Challenge bots</b>: everyone teams up against the bots. <b>Team vs team</b>: Blue against Gold, up to 5 a side. Bots hunt everyone, a fireball knocks out enemy players, and the last team with someone standing wins. One person creates a room and shares the code.</p>
+      <p class="lede" data-i18n="onintro">Play with up to 9 friends. <b>Challenge bots</b>: everyone teams up against the bots. <b>Team vs team</b>: Blue against Gold, up to 5 a side. There are no bots: you hunt each other. Everyone gets a free fireball every 8 seconds, a fireball knocks out enemy players, and the last team with someone standing wins. One person creates a room and shares the code.</p>
       <label class="field" for="nick"><span data-i18n="yourname">YOUR NAME</span><input id="nick" maxlength="10" autocomplete="off" spellcheck="false"></label>
       <div class="row"><button class="btn primary" id="hostBtn" data-i18n="create">Create room</button></div>
       <div class="row"><input id="codeIn" class="code" maxlength="4" placeholder="CODE" autocomplete="off" spellcheck="false" aria-label="Room code"><button class="btn" id="joinBtn" data-i18n="join">Join room</button></div>
@@ -316,7 +316,7 @@ const ZH_STATIC = {
   skins:'造型', skinintro:'改變方塊的外觀。造型只要買一次，之後隨時可以換。', back:'返回',
   paused:'暫停', resume:'繼續', quit:'回到地圖',
   onlinelogo:'<span class="b">線上</span> <span class="r">對戰</span>',
-  onintro:'最多和 9 位朋友一起玩。<b>挑戰機器人</b>：大家組隊對抗機器人。<b>隊伍對戰</b>：藍隊對金隊，每隊最多 5 人。機器人會追捕所有人，火球能淘汰敵隊玩家，最後還有人存活的隊伍獲勝。由一人建立房間並分享代碼。',
+  onintro:'最多和 9 位朋友一起玩。<b>挑戰機器人</b>：大家組隊對抗機器人。<b>隊伍對戰</b>：藍隊對金隊，每隊最多 5 人。沒有機器人，玩家互相追捕。每人每 8 秒獲得一顆免費火球，火球能淘汰敵隊玩家，最後還有人存活的隊伍獲勝。由一人建立房間並分享代碼。',
   yourname:'你的名字', create:'建立房間', join:'加入房間', room:'房間', game:'玩法', coop:'挑戰機器人', vs:'隊伍對戰',
   map:'地圖', mode:'難度', players:'玩家', joinblue:'加入藍隊', joingold:'加入金隊', start:'開始', leave:'離開房間', giftto:'送金幣給', amount:'數量', send:'送出',
 };
@@ -350,7 +350,7 @@ const ZH = {
   '{team} TEAM · ':'{team}隊 · ', 'CO-OP · ':'合作 · ',
   "Both teams went down together. It's a draw!":'兩隊同時全滅，平手！', '{team} team wins! ':'{team}隊獲勝！',
   'Nice work, your team survived.':'幹得好，你的隊伍活下來了。', 'Your team was knocked out first.':'你的隊伍先被淘汰了。',
-  'DRAW':'平手', 'YOU WIN!':'你贏了！', 'YOU LOSE':'你輸了',
+  'DRAW':'平手', 'FIREBALL READY':'火球就緒', 'NO BOTS. HUNT THE OTHER TEAM! FREE FIREBALL EVERY 8 SECONDS':'沒有機器人，去追捕敵隊！每 8 秒一顆免費火球', 'YOU WIN!':'你贏了！', 'YOU LOSE':'你輸了',
   'Your whole team got caught on {map} ({mode}). The team lasted {t} seconds.':'全隊都在{map}（{mode}）被抓到了。隊伍撐了 {t} 秒。',
   'Back to room':'回到房間',
   'No teammates in the room yet.':'房間裡還沒有隊友。', 'Pick an amount from 1 to {n}.':'請選 1 到 {n} 之間的數量。',
@@ -377,6 +377,10 @@ const SH = o => (zhOf(o)||[])[2] || o.short;         // short label
 Object.entries(MODES).forEach(([k,m])=>{ m.key=k; });
 const PF = '"Press Start 2P","DotGothic16","Noto Sans TC",monospace';
 const teamName = v => L(TEAMS[v?1:0].name);
+const isVS = () => !!(G && G.online && NET.round && NET.round.kind==='vs');
+/* team vs team: each cube is painted in its team colour (fill, light edge, dark edge) */
+const TEAM_CUBE = [['#00c8ff','#a8f6ff','#004f80'], ['#ffd400','#fff2a0','#7a5c00']];
+const VS_FIRE_EVERY = 8, VS_FIRE_MAX = 2;
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(e) {} }
 
 /* ---------- dom ---------- */
@@ -615,8 +619,9 @@ function floatText(x,y,text,color){ G.floats.push({x,y,text,color,life:0.9}); }
 function usePower(id){
   if (state!=='play' || !G || G.dead) return;
   const p = POWERS.find(q=>q.id===id);
-  if (!save.inv[id]) { toast(L('No {name} left. Buy more in the shop.',{name:N(p)})); return; }
-  save.inv[id]--; persist();
+  const free = id==='fire' && isVS() && G.vsFire>0;
+  if (!free && !save.inv[id]) { toast(L('No {name} left. Buy more in the shop.',{name:N(p)})); return; }
+  if (free) G.vsFire--; else { save.inv[id]--; persist(); }
   G.active[id] = p.dur;
   if (id==='ice'){ G.freeze=p.dur; if (G.online && NET.mode==='guest') NET.iceN++; }
   if (id==='ice') G.bots.forEach(b=>burst(b.x,b.y,'#cfefff',6,120));
@@ -705,6 +710,10 @@ function update(dt){
     if (G.active[id]>0){ G.active[id]-=dt; if (G.active[id]<=0){ G.active[id]=0; if (id==='shield'||id==='fire') G.grace=0.8; } }
   }
   if (G.grace>0) G.grace-=dt;
+  if (isVS() && !G.dead){
+    if (G.vsFire==null){ G.vsFire=1; G.vsFireT=VS_FIRE_EVERY; renderPowers(); }
+    if (G.vsFire<VS_FIRE_MAX){ G.vsFireT-=dt; if (G.vsFireT<=0){ G.vsFire++; G.vsFireT=VS_FIRE_EVERY; renderPowers(); floatText(p.x,p.y-28,L('FIREBALL READY'),'#ff8a2b'); } }
+  }
 
   // player input
   let ix=0, iy=0;
@@ -738,7 +747,7 @@ function update(dt){
   if (G.flowT<=0 && seen.length){ G.dist=flowField(g,seen.map(t=>({x:t.x,y:t.y}))); G.flowT=0.15; }
 
   // spawning
-  if (live.length){
+  if (live.length && !isVS()){
     G.spawnT -= dt;
     if (G.spawnT<=0 && G.bots.length+G.warns.length<G.mode.maxBots){
       const n = G.t>G.mode.doubleAt ? 2 : 1;
@@ -1018,8 +1027,8 @@ function render(){
       const k=SKINS.find(q=>q.id===o.sk)||SKINS[0];
       if (o.sh){ ctx.fillStyle='#00f0ff'; for (let n=0;n<16;n++){ const an=n/16*Math.PI*2+T*2; ctx.fillRect(Math.round(o.x+Math.cos(an)*48)-3,Math.round(o.y+Math.sin(an)*48)-3,6,6); } }
       if (o.fi){ ctx.fillStyle='#ff8a2b'; ctx.fillRect(Math.round(o.x)-18,Math.round(o.y)-18,36,36); }
-      drawSkin(ctx,o.x,o.y,PLAYER_SIZE,k,o.iv?0.28:1,T);
-      if (NET.round && NET.round.kind==='vs'){ ctx.strokeStyle=TEAMS[o.team?1:0].color; ctx.lineWidth=3; ctx.strokeRect(Math.round(o.x)-17,Math.round(o.y)-17,34,34); }
+      if (isVS()){ const tc=TEAM_CUBE[o.team?1:0]; drawCube(o.x,o.y,PLAYER_SIZE,tc[0],tc[1],tc[2],o.iv?0.28:1); }
+      else drawSkin(ctx,o.x,o.y,PLAYER_SIZE,k,o.iv?0.28:1,T);
       ctx.fillStyle='#000'; ctx.fillText(cleanName(o.nm),Math.round(o.x)+2,Math.round(o.y)-20);
       ctx.fillStyle='#f4f4ff'; ctx.fillText(cleanName(o.nm),Math.round(o.x),Math.round(o.y)-22);
     }
@@ -1041,8 +1050,8 @@ function render(){
       [[20*fl,'#c41e00'],[15*fl,'#ff8a2b'],[10*fl,'#ffd04a'],[4,'#fff6d0']].forEach(([r,c])=>{ r=Math.round(r/2)*2; ctx.fillStyle=c; ctx.fillRect(px-r,py-r*0.6,r*2,r*1.2); ctx.fillRect(px-r*0.6,py-r,r*1.2,r*2); });
     } else if (!blink){
       const a = invis ? 0.28 : 1;
-      drawSkin(ctx,p.x,p.y,p.s,curSkin(),a,T);
-      if (G.online && NET.round && NET.round.kind==='vs'){ ctx.strokeStyle=TEAMS[NET.myTeam].color; ctx.lineWidth=3; ctx.strokeRect(Math.round(p.x)-17,Math.round(p.y)-17,34,34); }
+      if (isVS()){ const tc=TEAM_CUBE[NET.myTeam?1:0]; drawCube(p.x,p.y,p.s,tc[0],tc[1],tc[2],a); }
+      else drawSkin(ctx,p.x,p.y,p.s,curSkin(),a,T);
       if (isOn('bolt')){ ctx.strokeStyle='#ffe94a'; ctx.lineWidth=2; ctx.strokeRect(Math.round(p.x)-p.s/2-4,Math.round(p.y)-p.s/2-4,p.s+8,p.s+8); }
     }
   }
@@ -1071,9 +1080,10 @@ POWERS.forEach((p,i)=>{
 function renderPowers(){
   POWERS.forEach(p=>{
     const b=$('pw-'+p.id), left=G?(G.active[p.id]||0):0;
-    b.querySelector('.ct').textContent='×'+save.inv[p.id];
+    const have = save.inv[p.id] + (p.id==='fire' && isVS() ? (G.vsFire||0) : 0);
+    b.querySelector('.ct').textContent='×'+have;
     b.querySelector('.nm').textContent=SH(p); b.setAttribute('aria-label', N(p));
-    b.disabled = !save.inv[p.id] && left<=0;
+    b.disabled = !have && left<=0;
     b.classList.toggle('on', left>0);
     b.querySelector('.bar').style.width = (left>0 ? left/p.dur*100 : 0)+'%';
   });
@@ -1343,6 +1353,7 @@ function startOnline(m){
   $('hudMap').textContent = (NET.round.kind==='vs' ? L('{team} TEAM · ',{team:LANG==='zh'?teamName(NET.myTeam):TEAMS[NET.myTeam].name.toUpperCase()}) : L('CO-OP · ')) + N(G.map);
   if (NET.mode==='guest') G.coins=[];
   state='play'; show(null); renderPowers(); lastHud='';
+  if (NET.round.kind==='vs') toast(L('NO BOTS. HUNT THE OTHER TEAM! FREE FIREBALL EVERY 8 SECONDS'));
 }
 function hostStart(){
   if (NET.mode!=='host') return;

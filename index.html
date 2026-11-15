@@ -129,6 +129,20 @@ input.code{width:8.5em;text-transform:uppercase;letter-spacing:.2em}
 .lobby small{margin-left:auto;font-family:var(--display);font-size:9px;color:var(--muted)}
 @media (max-width:480px){.btn{flex:1;font-size:11px;padding:12px 10px}.stat b{font-size:13px}#hud{gap:12px}}
 @media (prefers-reduced-motion:reduce){.blink{animation:none}}
+/* phones: always sideways. Joystick left, playfield middle, power-ups right. Held upright, the whole game is turned 90° to fit. */
+html.phone #app{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr);gap:6px 10px;padding-block:6px}
+html.phone #hud{grid-column:1/-1;gap:10px}
+html.phone #controls{display:contents}
+html.phone #stage{grid-column:2;grid-row:2}
+html.phone #stick{grid-column:1;grid-row:2;align-self:end;width:104px;height:104px;margin-bottom:6px}
+html.phone #knob{width:46px;height:46px;margin:-23px 0 0 -23px}
+html.phone #powers{grid-column:3;grid-row:2;display:flex;flex-direction:column;justify-content:center;gap:4px;width:84px}
+html.phone .pw{flex:1 1 0;max-height:64px;min-height:0;padding:4px 2px;gap:3px;justify-content:center}
+html.phone .pw .ct{font-size:14px;top:1px}
+html.phone .iconbtn{width:34px;height:34px}
+html.phone .stat b{font-size:13px}
+html.phone #toast{top:56px}
+html.rot body{position:fixed;top:0;left:0;width:var(--rw);height:var(--rh);transform:rotate(90deg) translateY(-100%);transform-origin:top left}
 </style>
 
 <div id="app">
@@ -387,13 +401,24 @@ function persist(){ try { localStorage.setItem(KEY, JSON.stringify(save)); } cat
 const $ = id => document.getElementById(id);
 const canvas = $('game'), ctx = canvas.getContext('2d'), stage = $('stage');
 let scale = 1, dpr = 1;
+/* phones play sideways; if the phone is held upright the page is turned 90° (html.rot) */
+const isPhone = matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 600;
+function setOrient(){
+  const de=document.documentElement, rot = isPhone && innerHeight > innerWidth;
+  de.classList.toggle('phone', isPhone); de.classList.toggle('rot', rot);
+  de.style.setProperty('--rw', innerHeight+'px'); de.style.setProperty('--rh', innerWidth+'px');
+}
+setOrient(); addEventListener('resize', setOrient);
+/* screen point -> page point, undoing the 90° turn */
+function toLocal(e){ return document.documentElement.classList.contains('rot') ? {x:e.clientY, y:innerWidth-e.clientX} : {x:e.clientX, y:e.clientY}; }
+function localRect(el){ const r=el.getBoundingClientRect(); return document.documentElement.classList.contains('rot') ? {left:r.top, top:innerWidth-r.right, width:r.height, height:r.width} : r; }
 function resize(){
-  const r = stage.getBoundingClientRect();
+  const r = {width:stage.clientWidth, height:stage.clientHeight};
   scale = Math.max(0.1, Math.min(r.width / W, r.height / H));
   canvas.style.width = (W*scale) + 'px'; canvas.style.height = (H*scale) + 'px';
   canvas.width = W*PIX; canvas.height = H*PIX;
 }
-function wantPortrait(){ const r=stage.getBoundingClientRect(); return r.height > r.width*1.1; }
+function wantPortrait(){ return !isPhone && stage.clientHeight > stage.clientWidth*1.1; }
 new ResizeObserver(()=>{ if (G && G.demo && wantPortrait()!==portrait) newGame(selMap,true); resize(); }).observe(stage);
 
 let toastT;
@@ -1425,7 +1450,7 @@ addEventListener('keyup',e=>{ keys[e.code]=false; });
 addEventListener('blur',()=>{ for (const k in keys) keys[k]=false; pause(); });
 document.addEventListener('visibilitychange',()=>{ if (document.hidden) pause(); });
 
-function toWorld(e){ const r=canvas.getBoundingClientRect(); return {x:(e.clientX-r.left)/scale, y:(e.clientY-r.top)/scale}; }
+function toWorld(e){ const r=localRect(canvas), q=toLocal(e); return {x:(q.x-r.left)/scale, y:(q.y-r.top)/scale}; }
 stage.addEventListener('pointerdown',e=>{
   if (state!=='play') return;
   const w=toWorld(e); joy={id:e.pointerId,active:true,ox:w.x,oy:w.y,x:w.x,y:w.y};
@@ -1437,8 +1462,8 @@ const endJoy=e=>{ if (joy&&joy.id===e.pointerId) joy=null; };
 /* on-screen joystick */
 const stickEl=$('stick'), knob=$('knob'), stick={active:false,id:null,x:0,y:0};
 function stickMove(e){
-  const r=stickEl.getBoundingClientRect(), max=r.width*0.34;
-  let dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height/2); const L=Math.hypot(dx,dy);
+  const r=localRect(stickEl), q=toLocal(e), max=r.width*0.34;
+  let dx=q.x-(r.left+r.width/2), dy=q.y-(r.top+r.height/2); const L=Math.hypot(dx,dy);
   if (L>max){ dx=dx/L*max; dy=dy/L*max; }
   knob.style.transform=`translate(${dx}px,${dy}px)`;
   const m=Math.hypot(dx,dy)/max; stick.x = m<0.15?0:dx/max; stick.y = m<0.15?0:dy/max;

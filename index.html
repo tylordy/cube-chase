@@ -46,7 +46,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 #stage{flex:1;min-height:0;position:relative;display:grid;place-items:center;touch-action:none}
 canvas#game{display:block;image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:0 0 0 3px var(--line),0 0 24px rgba(42,42,216,.55)}
 #controls{display:flex;align-items:center;gap:12px}
-#powers{flex:1;min-width:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+#powers{flex:1;min-width:0;display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 #stick{position:relative;flex:none;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#10104a 0 30%,#07071a 31%);border:3px solid var(--line);box-shadow:0 0 0 3px #000,0 0 14px rgba(42,42,216,.5);touch-action:none;cursor:grab}
 #stick::before,#stick::after{content:"";position:absolute;background:rgba(42,42,216,.55)}
 #stick::before{left:50%;top:10px;bottom:10px;width:3px;transform:translateX(-50%)}
@@ -114,7 +114,7 @@ kbd{font-family:var(--body);background:var(--panel2);border:2px solid var(--line
 .results .stat b{font-size:clamp(13px,3.5vw,20px)}
 #toast{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--panel2);border:3px solid var(--line);padding:8px 14px;font-size:18px;z-index:30;pointer-events:none;opacity:0;white-space:nowrap}
 #toast.show{opacity:1}
-@media (max-width:520px){#powers{grid-template-columns:repeat(3,1fr)}#stick{width:110px;height:110px}}
+@media (max-width:520px){#powers{grid-template-columns:repeat(4,1fr)}#stick{width:110px;height:110px}}
 .field{display:flex;flex-direction:column;gap:6px}
 .field span{font-family:var(--display);font-size:9px;color:var(--cyan)}
 .field input,.field select,input.code{font-family:var(--display);font-size:14px;background:var(--panel);color:var(--fg);border:3px solid var(--line);padding:12px;border-radius:0;max-width:100%}
@@ -129,6 +129,22 @@ input.code{width:8.5em;text-transform:uppercase;letter-spacing:.2em}
 .lobby small{margin-left:auto;font-family:var(--display);font-size:9px;color:var(--muted)}
 @media (max-width:480px){.btn{flex:1;font-size:11px;padding:12px 10px}.stat b{font-size:13px}#hud{gap:12px}}
 @media (prefers-reduced-motion:reduce){.blink{animation:none}}
+/* opening credits: rolls up once when the game loads, any tap or key skips */
+#credits{position:fixed;inset:0;z-index:40;background:#000;overflow:hidden;cursor:pointer}
+#credits .roll{position:absolute;left:0;right:0;top:100%;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:0 16px;animation:roll 16s linear forwards}
+#credits h3{font-family:var(--display);font-weight:400;font-size:11px;color:var(--cyan);margin:22px 0 0;letter-spacing:.1em}
+#credits p{margin:0;font-family:var(--display);font-size:16px;color:var(--fg);line-height:1.5}
+#credits .logo{font-size:clamp(34px,8vw,64px)}
+#credits .skip{position:absolute;right:16px;bottom:14px;font-family:var(--display);font-size:10px;color:var(--muted);animation:blink 1s steps(1) infinite}
+#langPick{position:fixed;inset:0;z-index:41;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:16px;text-align:center}
+#langPick p{margin:0;font-family:var(--display);font-size:14px;color:var(--cyan);line-height:1.8}
+#langPick .row{justify-content:center}
+#langPick .btn{min-width:200px;font-size:16px}
+#langPick .btn[lang="zh-Hant"]{font-family:'DotGothic16','Noto Sans TC',monospace;font-size:20px}
+@keyframes roll{to{transform:translateY(calc(-100% - 100vh))}}
+html.rot #credits .roll{animation-name:rollr}
+@keyframes rollr{to{transform:translateY(calc(-100% - 100vw))}}
+@media (prefers-reduced-motion:reduce){#credits .roll{animation-duration:30s}}
 /* phones: always sideways. Joystick and power-ups together on the left, playfield on the right. Held upright, the whole game is turned 90° to fit. */
 html.phone #app{display:grid;grid-template-columns:auto auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:6px 10px;padding-block:6px}
 html.phone #hud{grid-column:1/-1;gap:10px}
@@ -136,11 +152,16 @@ html.phone #controls{display:contents}
 html.phone #stage{grid-column:3;grid-row:2}
 html.phone #stick{grid-column:1;grid-row:2;align-self:end;width:104px;height:104px;margin-bottom:6px}
 html.phone #knob{width:46px;height:46px;margin:-23px 0 0 -23px}
-html.phone #powers{grid-column:2;grid-row:2;display:flex;flex-direction:column;justify-content:center;gap:4px;width:84px}
-html.phone .pw{flex:1 1 0;max-height:64px;min-height:0;padding:4px 2px;gap:3px;justify-content:center}
+html.phone #powers{grid-column:2;grid-row:2;display:grid;grid-template-columns:repeat(2,78px);grid-auto-rows:minmax(0,58px);align-content:center;gap:5px;min-height:0;overflow:hidden}
+html.phone .pw{min-height:0;padding:4px 2px;gap:4px;justify-content:center}
 html.phone .pw .ct{font-size:14px;top:1px}
+html.phone .pw .nm{font-size:8px;line-height:1.4;overflow:visible}
+html.phone.zh .pw .nm{font-size:12px;line-height:1.25}
 html.phone .iconbtn{width:34px;height:34px}
+html.phone .stat{gap:2px}
 html.phone .stat b{font-size:13px}
+html.phone.zh .stat small{font-size:11px;line-height:1.2}
+html.phone #hud{min-height:36px;padding-top:2px}
 html.phone #toast{top:56px}
 html.rot body{position:fixed;top:0;left:0;width:var(--rw);height:var(--rh);transform:rotate(90deg) translateY(-100%);transform-origin:top left}
 </style>
@@ -167,7 +188,7 @@ html.rot body{position:fixed;top:0;left:0;width:var(--rw);height:var(--rh);trans
 <div class="overlay" id="menu">
   <div class="sheet">
     <h1 class="logo" data-i18n="logo"><span class="b">CUBE</span> <span class="r">CHASE</span></h1>
-    <p class="lede" data-i18n="intro">You are the blue cube. Red cubes pour in from the edges and hunt you down. One touch and you're out. Grab coins, spend them on power-ups, and survive as long as you can.</p>
+    <p class="lede" data-i18n="intro">You are the blue cube. Red cubes pour in from the edges and hunt you down. One touch and you're out. Grab coins, spend them on power-ups, and survive as long as you can. Survive 20 seconds to win, then 30 seconds, 1 minute, and 30 seconds more after that each time. Every loss costs 5 coins.</p>
     <h2 data-i18n="difficulty">Difficulty</h2>
     <div class="modes" id="modeList"></div>
     <h2 data-i18n="pickmap">Pick a map</h2>
@@ -180,7 +201,7 @@ html.rot body{position:fixed;top:0;left:0;width:var(--rw);height:var(--rh);trans
       <span class="purse" id="menuPurse"></span>
     </div>
     <p class="blink" data-i18n="press">PRESS START</p>
-    <p class="help" data-i18n="help">Move with <kbd>WASD</kbd> or the arrow keys. <kbd>M</kbd> turns sound effects on or off. Use the joystick under the field, or drag anywhere on the field to steer. Use power-ups with <kbd>1</kbd>–<kbd>5</kbd> or tap them under the field. <kbd>P</kbd> pauses.</p>
+    <p class="help" data-i18n="help">Move with <kbd>WASD</kbd> or the arrow keys. <kbd>M</kbd> turns sound effects on or off. Use the joystick under the field, or drag anywhere on the field to steer. Use power-ups with <kbd>1</kbd>–<kbd>7</kbd> or tap them under the field. <kbd>P</kbd> pauses.</p>
   </div>
 </div>
 
@@ -259,6 +280,8 @@ html.rot body{position:fixed;top:0;left:0;width:var(--rw);height:var(--rh);trans
   </div>
 </div>
 
+<div id="langPick" hidden><p>CHOOSE YOUR LANGUAGE<br><span lang="zh-Hant" style="font-family:'DotGothic16','Noto Sans TC',monospace;font-size:18px">請選擇語言</span></p><div class="row"><button class="btn" id="pickEn" lang="en">English</button><button class="btn" id="pickZh" lang="zh-Hant">繁體中文</button></div></div>
+<div id="credits" hidden aria-label="Credits"><div class="roll" id="creditRoll"></div><span class="skip" id="creditSkip"></span></div>
 <div id="toast"></div>
 
 
@@ -286,6 +309,8 @@ const POWERS = [
   { id:'invis',  name:'Invisible',    short:'Invis',  dur:6, price:20, color:'#b88cff', desc:'Vanish for 6 seconds. Bots lose track of you and wander off.' },
   { id:'ice',    name:'Ice',          short:'Ice',    dur:4, price:20, color:'#9fdcff', desc:'Freeze every bot on the map for 4 seconds. Frozen bots can\'t hurt you.' },
   { id:'bolt',   name:'Lightning',    short:'Bolt',   dur:5, price:10, color:'#ffe94a', desc:'Super speed for 5 seconds. Twice as fast as normal.' },
+  { id:'wall',   name:'Wall Builder', short:'Wall',   dur:10, price:15, color:'#8a8aff', desc:'Drop a 3-block wall on the grid right behind you. It blocks chasers for 10 seconds.' },
+  { id:'magnet', name:'Magnet',       short:'Magnet', dur:8, price:15, color:'#ff5ad1', desc:'Pull in every coin near you for 8 seconds.' },
 ];
 
 const MODES = {
@@ -298,6 +323,10 @@ const KEY = 'cubechase.v1';
 let save = { mode:'normal', coins:20, inv:{shield:1,fire:0,invis:0,ice:0,bolt:1}, best:{}, map:0 };
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.coins === 'number') save = Object.assign(save, s); } catch(e) {}
 if (!MODES[save.mode]) save.mode='normal';
+POWERS.forEach(p=>{ if (!(save.inv[p.id]>=0)) save.inv[p.id]=0; });
+/* survival goal: 20s, 30s, 1:00, then 30s longer after every win. save.lvl counts wins (older saves start over at 20s) */
+delete save.goal; if (!(save.lvl>=0)) save.lvl=0;
+const goalSec = l => l<3 ? [20,30,60][l] : 60+30*(l-2);
 const bestKey = id => save.mode==='normal' ? id : id+':'+save.mode;
 POWERS.forEach(p => { if (typeof save.inv[p.id] !== 'number') save.inv[p.id] = 0; });
 /* player skins: colors, patterns and trails. None of them are red, so you never look like a bot. */
@@ -323,9 +352,9 @@ let LANG = save.lang==='zh' ? 'zh' : 'en';
 const ZH_STATIC = {
   time:'時間', coins:'金幣', coins2:'金幣', survived:'存活', best:'最佳',
   logo:'<span class="b">方塊</span> <span class="r">追逐</span>',
-  intro:'你是藍色方塊。紅色方塊會從四周湧進來追捕你，被碰到就出局。收集金幣、購買道具，盡可能活久一點！',
+  intro:'你是藍色方塊。紅色方塊會從四周湧進來追捕你，被碰到就出局。收集金幣、購買道具，盡可能活久一點！撐過 20 秒就贏，接著挑戰 30 秒、1 分鐘，之後每次多 30 秒。每輸一次扣 5 金幣。',
   difficulty:'難度', pickmap:'選擇地圖', play:'開始遊戲', shop:'商店', online:'線上', press:'按下開始',
-  help:'用 <kbd>WASD</kbd> 或方向鍵移動。<kbd>M</kbd> 開關音效，<kbd>N</kbd> 開關音樂。也可以用場地下方的搖桿，或在場地上任意拖曳來操控。按 <kbd>1</kbd>–<kbd>5</kbd> 或點場地下方的按鈕使用道具。<kbd>P</kbd> 暫停。',
+  help:'用 <kbd>WASD</kbd> 或方向鍵移動。<kbd>M</kbd> 開關音效，<kbd>N</kbd> 開關音樂。也可以用場地下方的搖桿，或在場地上任意拖曳來操控。按 <kbd>1</kbd>–<kbd>7</kbd> 或點場地下方的按鈕使用道具。<kbd>P</kbd> 暫停。',
   shopintro:'每次購買可以使用一次。帶進任何地圖，在紅色方塊逼近時使用。',
   skins:'造型', skinintro:'改變方塊的外觀。造型只要買一次，之後隨時可以換。', back:'返回',
   paused:'暫停', resume:'繼續', quit:'回到地圖',
@@ -364,7 +393,10 @@ const ZH = {
   '{team} TEAM · ':'{team}隊 · ', 'CO-OP · ':'合作 · ',
   "Both teams went down together. It's a draw!":'兩隊同時全滅，平手！', '{team} team wins! ':'{team}隊獲勝！',
   'Nice work, your team survived.':'幹得好，你的隊伍活下來了。', 'Your team was knocked out first.':'你的隊伍先被淘汰了。',
-  'DRAW':'平手', 'FIREBALL READY':'火球就緒', 'NO BOTS. HUNT THE OTHER TEAM! FREE FIREBALL EVERY 8 SECONDS':'沒有機器人，去追捕敵隊！每 8 秒一顆免費火球', 'YOU WIN!':'你贏了！', 'YOU LOSE':'你輸了',
+  'DRAW':'平手', 'MUSIC':'音樂', 'Picked by Tylor':'由駱廷聿挑選', 'Tylor':'駱廷聿', 'CREATED BY':'創作者', 'GAME DESIGN':'遊戲設計', 'IDEAS AND TESTING':'點子與測試',
+  'MAPS':'地圖', 'BUILT WITH':'製作工具', 'SPECIAL THANKS':'特別感謝', 'Everyone who plays with Tylor':'每一位和駱廷聿一起玩的朋友',
+  'THANKS FOR PLAYING!':'謝謝你來玩！', 'TAP OR PRESS ANY KEY TO SKIP':'點一下或按任意鍵跳過', 'You owe {n}. Earn it back to buy again.':'你欠 {n} 金幣，賺回來才能再購買。', 'You have no coins to send.':'你沒有金幣可以送。', 'FIREBALL READY':'火球就緒', 'NO BOTS. HUNT THE OTHER TEAM! FREE FIREBALL EVERY 8 SECONDS':'沒有機器人，去追捕敵隊！每 8 秒一顆免費火球', 'YOU WIN!':'你贏了！', 'Next goal':'下一個目標', 'GOAL {g} · {t}':'目標 {g} · {t}',
+  'You survived {n}! +{b} bonus coins. Next goal: {m}.':'你撐過了 {n}！獎勵 {b} 金幣。下一個目標：{m}。', 'YOU LOSE':'你輸了',
   'Your whole team got caught on {map} ({mode}). The team lasted {t} seconds.':'全隊都在{map}（{mode}）被抓到了。隊伍撐了 {t} 秒。',
   'Back to room':'回到房間',
   'No teammates in the room yet.':'房間裡還沒有隊友。', 'Pick an amount from 1 to {n}.':'請選 1 到 {n} 之間的數量。',
@@ -378,6 +410,7 @@ const ZH_NAMES = {
   shield:['能量護盾','能量護盾保護你 6 秒，機器人會被彈開。','護盾'], fire:['火球','變成火球 5 秒。碰到的機器人都會燒掉並掉出金幣。','火球'],
   invis:['隱形','隱形 6 秒。機器人會失去你的蹤影，四處亂晃。','隱形'], ice:['冰凍','冰凍地圖上所有機器人 4 秒。結冰的機器人傷不了你。','冰凍'],
   bolt:['閃電','超級加速 5 秒，速度是平常的兩倍。','閃電'],
+  wall:['築牆','在你身後的格子放下 3 塊牆，擋住追兵 10 秒。','築牆'], magnet:['磁鐵','8 秒內把附近的金幣全部吸過來。','磁鐵'],
   easy:['簡單','機器人較慢'], normal:['普通','經典追逐'], hard:['困難','聰明的機器人會包圍你，金幣加倍'],
   classic:['經典','原本的藍色方塊。'], mint:['薄荷','清新的綠色。'], grape:['葡萄','深紫色。'], arctic:['極地','冰白色，帶點寒意。'],
   checker:['棋盤','藍白棋盤格。'], hazard:['警戒','黃黑相間的警告條紋。'], neon:['霓虹','發光的青色，會留下殘影。'],
@@ -426,7 +459,24 @@ function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('sho
 
 /* ---------- chiptune sfx ---------- */
 let AC=null, soundOn = save.sound!==false;
-function audioInit(){ if (AC||!soundOn) return; try { AC=new (window.AudioContext||window.webkitAudioContext)(); } catch(e){ AC=null; } }
+function audioInit(){
+  if (!soundOn) return;
+  if (!AC){ try { AC=new (window.AudioContext||window.webkitAudioContext)(); } catch(e){ AC=null; return; } }
+  if (AC.state!=='running') AC.resume().catch(()=>{});
+}
+/* phones (iPhone especially) only allow sound after a tap, so the first touches unlock both the
+   sound effects and the music player. 'playback' also lets sound play with the ring/silent switch off where iOS supports it. */
+let audioUnlocked=false;
+function unlockAudio(){
+  try { if (navigator.audioSession) navigator.audioSession.type='playback'; } catch(e){}
+  audioInit();
+  if (AC){ try { const b=AC.createBuffer(1,1,22050), s=AC.createBufferSource(); s.buffer=b; s.connect(AC.destination); s.start(0); } catch(e){} }
+  const m=document.getElementById('bgm');
+  if (m && m.paused && !audioUnlocked){ m.muted=true; const p=m.play(); if (p) p.then(()=>{ if (!(musicOn && state==='play')) m.pause(); m.muted=false; }).catch(()=>{ m.muted=false; }); else m.muted=false; }
+  if (AC && AC.state==='running') audioUnlocked=true;
+}
+['pointerdown','touchend','keydown','click'].forEach(ev=>addEventListener(ev, ()=>{ if (!audioUnlocked || (AC && AC.state!=='running')) unlockAudio(); }, {capture:true, passive:true}));
+document.addEventListener('visibilitychange',()=>{ if (!document.hidden && AC && AC.state!=='running') AC.resume().catch(()=>{}); });
 function tone(type,f1,f2,dur,vol,delay){
   if (!AC||!soundOn) return;
   const t=AC.currentTime+(delay||0), o=AC.createOscillator(), g=AC.createGain();
@@ -436,7 +486,9 @@ function tone(type,f1,f2,dur,vol,delay){
 }
 function sfx(k){
   if (!AC) return;
-  if (k==='coin'){ tone('square',988,0,0.06,0.07); tone('square',1319,0,0.12,0.07,0.06); }
+  if (k==='coin'){ const m=Math.pow(1.06,Math.min(12,FX.combo)); tone('square',988*m,0,0.06,0.07); tone('square',1319*m,0,0.12,0.07,0.06); }
+  else if (k==='win'){ [523,659,784,1047,784,1047,1319].forEach((f,i)=>tone('square',f,0,i===6?0.4:0.1,0.07,i*0.09)); }
+  else if (k==='wall'){ tone('square',160,80,0.12,0.08); tone('square',120,60,0.12,0.08,0.06); }
   else if (k==='spawn') tone('square',220,110,0.12,0.03);
   else if (k==='power'){ [523,659,784,1047].forEach((f,i)=>tone('square',f,0,0.08,0.06,i*0.05)); }
   else if (k==='burn') tone('sawtooth',400,60,0.2,0.07);
@@ -450,7 +502,7 @@ function toggleSound(){ soundOn=!soundOn; save.sound=soundOn; persist(); if (sou
    Peer-to-peer through PeerJS: the host runs the bots, coins and map, and sends the world
    20 times a second. Everyone moves their own cube and reports where it is. */
 const TEAMS=[{name:'Blue',color:'#00f0ff'},{name:'Gold',color:'#ffd400'}], MAX_PLAYERS=10;
-const NET = { kind:'coop', hostTeam:0, myTeam:0, round:null, mode:null, code:null, tr:null, myId:null, players:new Map(), world:null, lobby:null, got:new Set(), iceN:0, sendT:0, lobbyT:0, playing:false, others:new Map() };
+const NET = { kind:'coop', hostTeam:0, myTeam:0, round:null, mode:null, code:null, tr:null, myId:null, players:new Map(), world:null, lobby:null, got:new Set(), iceN:0, wbReq:[], sendT:0, lobbyT:0, playing:false, others:new Map() };
 const cleanName = s => String(s||'').replace(/[^A-Za-z0-9 _-]/g,'').trim().slice(0,10) || 'Player';
 function peerTransport(code, isHost, h){
   if (typeof Peer==='undefined'){ h.fail(L('Online play could not load. Check your internet connection and reload.')); return null; }
@@ -552,7 +604,7 @@ function newGame(mi, demo, opt){
   const portals = (map.portals||[]).map(([ax,ay,bx,by])=>{ if (portrait){ [ax,ay,bx,by]=[ay,ax,by,bx]; } return {a:{x:ax*C+C/2,y:ay*C+C/2}, b:{x:bx*C+C/2,y:by*C+C/2}}; });
   G = {
     mi, map, walls, grid, movers, portals, ring:0, shrinkT:12, demo:!!demo, t:0, spawnT:1.0, flowT:0, dist:null,
-    player:{x:W/2, y:H/2, s:PLAYER_SIZE, fx:1, fy:0},
+    player:{x:W/2, y:H/2, s:PLAYER_SIZE, fx:1, fy:0}, placed:[],
     bots:[], warns:[], coins:[], parts:[], floats:[],
     active:{}, grace:0, dead:false, deadT:0, runCoins:0, kills:0, freeze:0, cid:0, bid:0, online:!!opt.online, overT:0,
   };
@@ -585,10 +637,32 @@ function edgeCell(){
 }
 const isOn = id => (G.active[id]||0) > 0;
 
+/* ---------- wall builder: 3 blocks across your path, 2 cells behind you ---------- */
+function wallCells(){
+  const p=G.player, ax=Math.abs(p.fx)>=Math.abs(p.fy), dx=ax?Math.sign(p.fx)||1:0, dy=ax?0:Math.sign(p.fy)||1;
+  const ci=Math.floor(p.x/C)-dx*2, cj=Math.floor(p.y/C)-dy*2;
+  return [-1,0,1].map(k=>[ci+(ax?0:k), cj+(ax?k:0)]);
+}
+function cellFree(i,j){
+  if (i<0||j<0||i>=GW||j>=GH || G.grid[j*GW+i]) return false;
+  const l=i*C, t=j*C, hit=(x,y,s)=>x+s/2>l && x-s/2<l+C && y+s/2>t && y-s/2<t+C;
+  if (!G.dead && hit(G.player.x,G.player.y,G.player.s)) return false;
+  if (G.bots.some(b=>hit(b.x,b.y,b.s))) return false;
+  const others = NET.mode==='host' ? [...NET.players.values()].filter(o=>o.inGame&&o.al) : [...NET.others.values()].filter(o=>o.al);
+  return !others.some(o=>o.x!=null && hit(o.x,o.y,PLAYER_SIZE));
+}
+function placeWall(cells){
+  const dur=POWERS.find(q=>q.id==='wall').dur; let n=0;
+  for (const [ci,cj] of cells){ const i=ci|0, j=cj|0; if (cellFree(i,j)){ G.placed.push({i,j,t:dur}); n++; burst(i*C+C/2,j*C+C/2,'#8a8aff',8,140); } }
+  if (n) rebuildGrid();
+  return n;
+}
+
 /* ---------- map twists: sliding walls, portals, closing edge ---------- */
 function rebuildGrid(){
   const g=buildGrid(G.walls);
   for (const m of G.movers) for (let j=m.y;j<m.y+m.h;j++) for (let i=m.x;i<m.x+m.w;i++) if (i>=0&&i<GW&&j>=0&&j<GH) g[j*GW+i]=1;
+  for (const q of G.placed) if (q.i>=0&&q.i<GW&&q.j>=0&&q.j<GH) g[q.j*GW+q.i]=1;
   const k=G.ring;
   if (k>0) for (let j=0;j<GH;j++) for (let i=0;i<GW;i++) if (i<k||j<k||i>=GW-k||j>=GH-k) g[j*GW+i]=1;
   G.grid=g; G.flowT=0;
@@ -651,8 +725,10 @@ function usePower(id){
   if (id==='ice'){ G.freeze=p.dur; if (G.online && NET.mode==='guest') NET.iceN++; }
   if (id==='ice') G.bots.forEach(b=>burst(b.x,b.y,'#cfefff',6,120));
   if (id==='fire') burst(G.player.x,G.player.y,'#ff8a2b',24,260);
+  if (id==='wall'){ const cells=wallCells(); if (G.online && NET.mode==='guest') NET.wbReq.push(...cells); else placeWall(cells); }
   if (id==='shield') burst(G.player.x,G.player.y,'#56f0ff',20,200);
-  floatText(G.player.x, G.player.y-28, L('{name}!',{name:SH(p).toUpperCase()}), p.color); sfx('power');
+  floatText(G.player.x, G.player.y-28, L('{name}!',{name:SH(p).toUpperCase()}), p.color); sfx(id==='wall'?'wall':'power');
+  juice(id==='wall'?6:4, p.color, 0.22); ring(G.player.x,G.player.y,p.color,40);
   renderPowers();
 }
 
@@ -735,6 +811,7 @@ function update(dt){
     if (G.active[id]>0){ G.active[id]-=dt; if (G.active[id]<=0){ G.active[id]=0; if (id==='shield'||id==='fire') G.grace=0.8; } }
   }
   if (G.grace>0) G.grace-=dt;
+  if (!guest && G.placed.length){ let gone=false; for (const q of G.placed){ q.t-=dt; if (q.t<=0) gone=true; } if (gone){ G.placed=G.placed.filter(q=>q.t>0); rebuildGrid(); } }
   if (isVS() && !G.dead){
     if (G.vsFire==null){ G.vsFire=1; G.vsFireT=VS_FIRE_EVERY; renderPowers(); }
     if (G.vsFire<VS_FIRE_MAX){ G.vsFireT-=dt; if (G.vsFireT<=0){ G.vsFire++; G.vsFireT=VS_FIRE_EVERY; renderPowers(); floatText(p.x,p.y-28,L('FIREBALL READY'),'#ff8a2b'); } }
@@ -844,7 +921,7 @@ function update(dt){
       if (t.fire){
         burst(b.x,b.y,'#ff8a2b',16,220); burst(b.x,b.y,'#ff2448',8,160);
         G.bots.splice(k,1);
-        if (t.me){ G.kills++; addCoins(G.mode.coin, b.x, b.y); sfx('burn'); }
+        if (t.me){ G.kills++; addCoins(G.mode.coin, b.x, b.y); sfx('burn'); juice(6); }
         continue;
       }
       if (t.me && !frozen && G.grace<=0){ die(); break; }
@@ -852,9 +929,11 @@ function update(dt){
   }
   if (!G.dead) pvpHit();
   // coins
+  const MAG_R=200, mag=isOn('magnet');
+  if (mag && !G.dead && !guest) for (const c of G.coins){ const d=Math.hypot(c.x-p.x,c.y-p.y); if (d<MAG_R && d>1){ const k=Math.min(d,520*dt)/d; c.x+=(p.x-c.x)*k; c.y+=(p.y-c.y)*k; } }
   if (!G.dead) for (const c of G.coins){
     if (Math.hypot(c.x-p.x,c.y-p.y)<24){
-      burst(c.x,c.y,'#ffd400',10,140); addCoins(G.mode.coin,c.x,c.y); sfx('coin');
+      burst(c.x,c.y,'#ffd400',10,140); ring(c.x,c.y,'#ffd400',20); FX.combo=FX.comboT>0?FX.combo+1:0; FX.comboT=1.5; addCoins(G.mode.coin,c.x,c.y); sfx('coin');
       Object.assign(c, randomOpenCell(g,p.x,p.y,160)); c.id=++G.cid;
     }
   }
@@ -862,6 +941,7 @@ function update(dt){
   // end of round
   if (!G.online){
     if (G.dead){ G.deadT+=dt; if (G.deadT>0.9 && state==='play') showOver(); }
+    else if (!G.demo && state==='play' && G.t >= goalSec(save.lvl)) showWin();
   } else {
     let over=!live.length, winner=null;
     if (NET.round && NET.round.kind==='vs'){
@@ -900,6 +980,7 @@ function applyHostWorld(dt){
   if (w.r!==G.ring){ G.ring=w.r; ch=true; if (w.r>0){ floatText(W/2,H/2-60,L('CLOSING IN!'),'#ff2448'); sfx('die'); } }
   (w.mv||[]).forEach(([x,y],i)=>{ const m=G.movers[i]; if (m && (m.x!==x||m.y!==y)){ m.x=x; m.y=y; ch=true; } });
   G.shrinkT = w.st;
+  { const pb=(w.pb||[]).map(([i,j,f])=>({i,j,t:f?1:9})), key=a=>a.map(q=>q.i+','+q.j).join(';'); if (key(pb)!==key(G.placed)) ch=true; G.placed=pb; }
   if (ch){ const keep=G.bots; G.bots=[]; rebuildGrid(); G.bots=keep; if (!G.dead && hitBox(G.grid,G.player.x,G.player.y,G.player.s-6)) die(); }
   // teammates
   const seenIds=new Set();
@@ -923,14 +1004,22 @@ function guestChecks(){
     die(); return;
   }
   for (const c of G.coins){
-    if (!NET.got.has(c.id) && Math.hypot(c.x-p.x,c.y-p.y)<24){ NET.got.add(c.id); burst(c.x,c.y,'#ffd400',10,140); addCoins(G.mode.coin,c.x,c.y); sfx('coin'); }
+    if (!NET.got.has(c.id) && Math.hypot(c.x-p.x,c.y-p.y)<(isOn('magnet')?200:24)){ NET.got.add(c.id); burst(c.x,c.y,'#ffd400',10,140); ring(c.x,c.y,'#ffd400',20); FX.combo=FX.comboT>0?FX.combo+1:0; FX.comboT=1.5; addCoins(G.mode.coin,c.x,c.y); sfx('coin'); }
   }
   G.coins = G.coins.filter(c=>!NET.got.has(c.id));
 }
 function addCoins(n,x,y){ G.runCoins+=n; save.coins+=n; persist(); floatText(x,y-16,'+'+n,'#ffd400'); }
+/* ---------- game feel: screen shake, colour flash, coin combo ---------- */
+const FX = { shake:0, flash:0, flashC:'#fff', combo:0, comboT:0, last:0 };
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function juice(shake, color, flash){
+  if (!calm) FX.shake = Math.max(FX.shake, shake * (isPhone?0.6:1));
+  if (color){ FX.flashC=color; FX.flash=Math.max(FX.flash, flash||0.3); }
+}
+function ring(x,y,color,r){ for (let k=0;k<16;k++){ const a=k/16*Math.PI*2; G.parts.push({x:x+Math.cos(a)*r*0.2,y:y+Math.sin(a)*r*0.2,vx:Math.cos(a)*r*3,vy:Math.sin(a)*r*3,life:0.35,max:0.35,color,size:6}); } }
 function die(){
   if (G.dead) return;
-  G.dead=true; sfx('die');
+  G.dead=true; sfx('die'); juice(16,'#ff2448',0.5); FX.combo=0;
   if (G.online) toast(L("YOU'RE OUT. WATCH YOUR TEAM!"));
   burst(G.player.x,G.player.y,'#2c7dff',40,320); burst(G.player.x,G.player.y,'#ffffff',12,200);
 }
@@ -975,8 +1064,11 @@ function drawCube(x,y,s,fill,light,dark,alpha){
   ctx.globalAlpha=1;
 }
 function render(){
-  ctx.setTransform(PIX,0,0,PIX,0,0); ctx.imageSmoothingEnabled=false;
-  ctx.fillStyle='#02020c'; ctx.fillRect(0,0,W,H);
+  const now=performance.now(), fdt=Math.min(0.05,(now-(FX.last||now))/1000); FX.last=now;
+  FX.shake=Math.max(0,FX.shake-fdt*60); FX.flash=Math.max(0,FX.flash-fdt*1.8); if (FX.comboT>0) FX.comboT-=fdt;
+  const sx = FX.shake>0.5 ? Math.round((Math.random()*2-1)*FX.shake/2)*2 : 0, sy = FX.shake>0.5 ? Math.round((Math.random()*2-1)*FX.shake/2)*2 : 0;
+  ctx.setTransform(PIX,0,0,PIX,sx*PIX,sy*PIX); ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle='#02020c'; ctx.fillRect(-20,-20,W+40,H+40);
   ctx.strokeStyle='rgba(42,42,216,.22)'; ctx.lineWidth=2; ctx.beginPath();
   for (let i=1;i<GW;i++){ ctx.moveTo(i*C,0); ctx.lineTo(i*C,H); }
   for (let j=1;j<GH;j++){ ctx.moveTo(0,j*C); ctx.lineTo(W,j*C); }
@@ -990,6 +1082,12 @@ function render(){
     ctx.fillStyle='#0a0a3a'; ctx.fillRect(x*C,y*C,w*C,h*C);
     ctx.strokeStyle='#2a2ad8'; ctx.lineWidth=4; ctx.strokeRect(x*C+4,y*C+4,w*C-8,h*C-8);
     ctx.strokeStyle='#6c6cff'; ctx.lineWidth=2; ctx.strokeRect(x*C+10,y*C+10,w*C-20,h*C-20);
+  }
+  for (const q of G.placed){
+    const x=q.i*C, y=q.j*C, fade = q.t!=null && q.t<2 && Math.floor(G.t*8)%2;
+    ctx.fillStyle= fade ? '#14144a' : '#1c1c6a'; ctx.fillRect(x,y,C,C);
+    ctx.strokeStyle='#8a8aff'; ctx.lineWidth=4; ctx.strokeRect(x+3,y+3,C-6,C-6);
+    ctx.fillStyle='#8a8aff'; ctx.fillRect(x+C/2-3,y+C/2-3,6,6);
   }
   const T=G.t;
   // closed edge
@@ -1069,6 +1167,11 @@ function render(){
       ctx.fillStyle= left<1.5 && Math.floor(T*8)%2 ? 'rgba(0,240,255,.3)' : '#00f0ff';
       for (let k=0;k<24;k++){ const an=k/24*Math.PI*2+T*2; ctx.fillRect(Math.round(p.x+Math.cos(an)*r)-3,Math.round(p.y+Math.sin(an)*r)-3,6,6); }
     }
+    if (isOn('magnet')){
+      ctx.strokeStyle= G.active.magnet<1.5 && Math.floor(T*8)%2 ? 'rgba(255,90,209,.25)' : 'rgba(255,90,209,.55)'; ctx.lineWidth=2;
+      const rr=24+((T*60)%40); ctx.strokeRect(Math.round(p.x-rr),Math.round(p.y-rr),Math.round(rr*2),Math.round(rr*2));
+      ctx.fillStyle='#ff5ad1'; for (const c of G.coins){ if (Math.hypot(c.x-p.x,c.y-p.y)<200){ for (let k=1;k<4;k++){ ctx.fillRect(Math.round(c.x+(p.x-c.x)*k/4)-2,Math.round(c.y+(p.y-c.y)*k/4)-2,4,4); } } }
+    }
     if (isOn('fire')){
       const fl=1+Math.sin(T*30)*0.06;
       const px=Math.round(p.x), py=Math.round(p.y);
@@ -1080,7 +1183,9 @@ function render(){
       if (isOn('bolt')){ ctx.strokeStyle='#ffe94a'; ctx.lineWidth=2; ctx.strokeRect(Math.round(p.x)-p.s/2-4,Math.round(p.y)-p.s/2-4,p.s+8,p.s+8); }
     }
   }
+  if (!G.online && !G.demo && !G.dead){ ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='16px '+PF; const left=goalSec(save.lvl)-G.t; ctx.fillStyle= left<=10 && Math.floor(T*4)%2 ? '#ffd400' : 'rgba(244,244,255,.75)'; ctx.fillText(L('GOAL {g} · {t}',{g:mmss(goalSec(save.lvl)),t:mmss(left)}),W/2,28); }
   if (G.online && G.dead && !G.demo){ ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='20px '+PF; ctx.fillStyle= Math.floor(T*2)%2 ? '#f4f4ff' : '#00f0ff'; ctx.fillText(L('SPECTATING'),W/2,40); }
+  if (FX.flash>0.01){ ctx.globalAlpha=FX.flash; ctx.fillStyle=FX.flashC; ctx.fillRect(-20,-20,W+40,H+40); ctx.globalAlpha=1; }
   // floating text
   ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='16px '+PF;
   for (const f of G.floats){ ctx.globalAlpha=Math.min(1,f.life*2); ctx.fillStyle=f.color; ctx.fillText(f.text,f.x,f.y); }
@@ -1116,7 +1221,7 @@ function renderPowers(){
 let lastHud='';
 function renderHud(){
   const s=(G?G.t:0).toFixed(1)+'|'+save.coins;
-  if (s!==lastHud){ lastHud=s; $('hudTime').textContent=(G&&!G.demo?G.t:0).toFixed(1); $('hudCoinN').textContent=save.coins; }
+  if (s!==lastHud){ lastHud=s; $('hudTime').textContent=(G&&!G.demo?G.t:0).toFixed(1); $('hudCoinN').textContent=save.coins; $('hudCoinN').style.color = save.coins<0 ? 'var(--red)' : ''; }
   if (G && Object.values(G.active).some(v=>v>0)) renderPowers();
 }
 
@@ -1129,11 +1234,34 @@ function openMenu(){
   state='menu'; newGame(selMap,true); show('menu'); renderMapList(); $('menuPurse').textContent=L('{n} coins',{n:save.coins}); renderPowers();
 }
 function startGame(){ audioInit(); sfx('start'); save.map=selMap; persist(); newGame(selMap,false); state='play'; show(null); renderPowers(); lastHud=''; }
+/* losing costs coins; the balance can go below zero, and the shop stays locked until it's paid back */
+const LOSS_COST = 5;
+function chargeLoss(lost){
+  if (lost){ save.coins -= LOSS_COST; persist(); }
+  const el=$('rCoins'); el.textContent = '+'+G.runCoins + (lost ? ' −'+LOSS_COST : '');
+  el.style.color = lost && G.runCoins<LOSS_COST ? 'var(--red)' : 'var(--gold)';
+  lastHud='';
+}
+const mmss = t => { t=Math.max(0,Math.ceil(t)); return Math.floor(t/60)+':'+String(t%60).padStart(2,'0'); };
+function showWin(){
+  state='over'; sfx('win'); juice(0,'#ffd400',0.45);
+  for (let k=0;k<6;k++) burst(G.player.x,G.player.y,['#ffd400','#00f0ff','#ff5ad1'][k%3],14,360);
+  const goal=goalSec(save.lvl), bonus=Math.max(5, Math.round(goal/6)), id=bestKey(G.map.id), prev=save.best[id]||0, t=G.t;
+  if (t>prev) save.best[id]=t;
+  save.lvl++; save.coins+=bonus; persist();
+  $('rTime').textContent=t.toFixed(1)+'s'; $('rBest').textContent=Math.max(prev,t).toFixed(1)+'s';
+  const el=$('rCoins'); el.textContent='+'+(G.runCoins+bonus); el.style.color='var(--gold)'; lastHud='';
+  document.querySelector('#over .big').textContent=L('YOU WIN!');
+  $('overMsg').textContent=L('You survived {n}! +{b} bonus coins. Next goal: {m}.',{n:mmss(goal),b:bonus,m:mmss(goalSec(save.lvl))});
+  $('retryBtn').textContent=L('Next goal');
+  show('over');
+}
 function showOver(){
   state='over';
+  document.querySelector('#over .big').textContent=L('GAME OVER'); $('retryBtn').textContent=L('Play again');
   const id=bestKey(G.map.id), prev=save.best[id]||0, t=G.t;
   const rec = t>prev; if (rec) save.best[id]=t; persist();
-  $('rTime').textContent=t.toFixed(1)+'s'; $('rBest').textContent=Math.max(prev,t).toFixed(1)+'s'; $('rCoins').textContent='+'+G.runCoins;
+  $('rTime').textContent=t.toFixed(1)+'s'; $('rBest').textContent=Math.max(prev,t).toFixed(1)+'s'; chargeLoss(true);
   const mv={map:N(G.map), mode:N(G.mode), n:G.kills};
   $('overMsg').textContent = rec ? L('New best on {map} ({mode})!',mv) + (G.kills?L(G.kills>1?' You burned {n} bots.':' You burned {n} bot.',mv):'') : L('A red cube got you on {map} ({mode}).',mv) + (G.kills?L(G.kills>1?' You burned {n} bots first.':' You burned {n} bot first.',mv):'');
   show('over');
@@ -1167,7 +1295,8 @@ function renderMapList(){
   });
 }
 function renderShop(){
-  $('shopPurse').textContent=L('{n} coins',{n:save.coins});
+  $('shopPurse').textContent=L('{n} coins',{n:save.coins}) + (save.coins<0 ? ' · '+L('You owe {n}. Earn it back to buy again.',{n:-save.coins}) : '');
+  $('shopPurse').style.color = save.coins<0 ? 'var(--red)' : '';
   const el=$('shopList'); el.innerHTML='';
   POWERS.forEach((p,i)=>{
     const d=document.createElement('div'); d.className='item'; d.style.setProperty('--c',p.color);
@@ -1292,6 +1421,7 @@ function sendGift(){
   const to=$('giftTo').value, n=Math.floor(+$('giftN').value), kind=NET.mode==='host'?NET.kind:(NET.lobby&&NET.lobby.kind)||'coop';
   const mate=teammates(kind).find(p=>p.id===to);
   if (!mate){ onMsg(L('No teammates in the room yet.')); return; }
+  if (save.coins<1){ onMsg(L('You have no coins to send.')); return; }
   if (!(n>=1 && n<=save.coins)){ onMsg(L('Pick an amount from 1 to {n}.',{n:save.coins})); return; }
   save.coins-=n; persist(); sfx('coin');
   const nm=save.nick||'Player';
@@ -1345,6 +1475,7 @@ function hostOnMsg(from,m){
   else if (m.t==='st' && o.inGame && G && G.online){
     o.x=+m.x||0; o.y=+m.y||0; o.al=!!m.al; o.iv=!!m.iv; o.sh=!!m.sh; o.fi=!!m.fi; o.sk=String(m.sk||o.sk);
     if ((+m.ice||0)>o.ice){ o.ice=+m.ice; G.freeze=POWERS.find(q=>q.id==='ice').dur; G.bots.forEach(b=>burst(b.x,b.y,'#cfefff',6,120)); }
+    if (Array.isArray(m.wb) && m.wb.length) placeWall(m.wb.slice(0,6).filter(c=>Array.isArray(c)).map(c=>[+c[0],+c[1]]));
     if (Array.isArray(m.got)) for (const id of m.got){ const c=G.coins.find(q=>q.id===id); if (c){ Object.assign(c, randomOpenCell(G.grid,o.x,o.y,160)); c.id=++G.cid; } }
   }
 }
@@ -1360,7 +1491,7 @@ function guestOnMsg(m){
 }
 function startOnline(m){
   audioInit(); sfx('start');
-  NET.world=null; NET.got.clear(); NET.others.clear(); NET.iceN=0;
+  NET.world=null; NET.got.clear(); NET.others.clear(); NET.iceN=0; NET.wbReq=[];
   newGame(m.map,false,{online:true, mode:m.mode});
   const me = NET.mode==='host'?'host':NET.myId;
   NET.round = {kind:m.kind||'coop', teams:m.teams||{}};
@@ -1396,7 +1527,9 @@ function hostEndRound(winner){
 }
 function showOverOnline(time, winner){
   state='over';
-  $('rTime').textContent=(+time||0).toFixed(1)+'s'; $('rBest').textContent='-'; $('rCoins').textContent='+'+G.runCoins;
+  $('rTime').textContent=(+time||0).toFixed(1)+'s'; $('rBest').textContent='-';
+  const isVsRound = NET.round && NET.round.kind==='vs' && winner!=null;
+  chargeLoss(isVsRound ? (winner!==-1 && winner!==NET.myTeam) : true);
   if (NET.round && NET.round.kind==='vs' && winner!=null){
     $('overMsg').textContent = winner===-1 ? L("Both teams went down together. It's a draw!") : L('{team} team wins! ',{team:teamName(winner)}) + L(winner===NET.myTeam ? 'Nice work, your team survived.' : 'Your team was knocked out first.');
     document.querySelector('#over .big').textContent = L(winner===-1 ? 'DRAW' : winner===NET.myTeam ? 'YOU WIN!' : 'YOU LOSE');
@@ -1412,10 +1545,10 @@ function netTick(dt){
     const p=G.player, R=Math.round;
     const pl=[['host', save.nick||'Player', save.skin, R(p.x), R(p.y), G.dead?0:1, isOn('invis')?1:0, isOn('shield')?1:0, isOn('fire')?1:0, NET.hostTeam]];
     for (const [id,o] of NET.players) if (o.inGame && o.x!=null) pl.push([id, o.nm, o.sk, R(o.x), R(o.y), o.al?1:0, o.iv?1:0, o.sh?1:0, o.fi?1:0, o.team||0]);
-    NET.tr.broadcast({t:'w', gt:+G.t.toFixed(2), fz:+G.freeze.toFixed(2), b:G.bots.map(b=>[b.id,R(b.x),R(b.y)]), c:G.coins.map(c=>[c.id,R(c.x),R(c.y)]), w:G.warns.map(w=>[R(w.x),R(w.y)]), r:G.ring, st:+G.shrinkT.toFixed(1), mv:G.movers.map(m=>[m.x,m.y]), pl});
+    NET.tr.broadcast({t:'w', gt:+G.t.toFixed(2), fz:+G.freeze.toFixed(2), b:G.bots.map(b=>[b.id,R(b.x),R(b.y)]), c:G.coins.map(c=>[c.id,R(c.x),R(c.y)]), w:G.warns.map(w=>[R(w.x),R(w.y)]), r:G.ring, st:+G.shrinkT.toFixed(1), mv:G.movers.map(m=>[m.x,m.y]), pb:G.placed.map(q=>[q.i,q.j,q.t<2?1:0]), pl});
   } else if (G && G.online && state==='play'){
     const p=G.player;
-    NET.tr.broadcast({t:'st', x:Math.round(p.x), y:Math.round(p.y), al:!G.dead, iv:isOn('invis'), sh:isOn('shield'), fi:isOn('fire'), sk:save.skin, ice:NET.iceN, got:[...NET.got].slice(-12)});
+    NET.tr.broadcast({t:'st', x:Math.round(p.x), y:Math.round(p.y), al:!G.dead, iv:isOn('invis'), sh:isOn('shield'), fi:isOn('fire'), sk:save.skin, ice:NET.iceN, got:[...NET.got].slice(-12), wb:NET.wbReq.splice(0)});
   }
 }
 $('onlineBtn').onclick=openOnline;
@@ -1440,7 +1573,7 @@ addEventListener('pagehide',()=>{ if (NET.tr) NET.tr.close(); });
 const GAME_KEYS=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyW','KeyA','KeyS','KeyD'];
 addEventListener('keydown',e=>{
   if (GAME_KEYS.includes(e.code)){ keys[e.code]=true; if (state==='play') e.preventDefault(); }
-  if (e.code.startsWith('Digit')){ const n=+e.code.slice(5); if (n>=1&&n<=5) usePower(POWERS[n-1].id); }
+  if (e.code.startsWith('Digit')){ const n=+e.code.slice(5); if (n>=1&&n<=POWERS.length) usePower(POWERS[n-1].id); }
   if (e.code==='KeyM') toggleSound();
   if (e.code==='KeyN') toggleMusic();
   if (e.code==='KeyP'||e.code==='Escape'){ state==='paused'?resume():pause(); }
@@ -1508,6 +1641,34 @@ function frame(now){
 }
 openMenu();
 applyLang();
+/* ---------- opening credits ---------- */
+function showCredits(){
+  const el=$('credits'), roll=$('creditRoll');
+  const music = document.getElementById('bgm') ? [[L('MUSIC'), L('Picked by Tylor')]] : [];
+  const rows = [[L('CREATED BY'),L('Tylor')], [L('GAME DESIGN'),L('Tylor')], [L('IDEAS AND TESTING'),L('Tylor')], ...music,
+    [L('MAPS'), N(MAPS[0])+' · '+N(MAPS[3])+' · '+N(MAPS[4])+' · '+N(MAPS[5])], [L('BUILT WITH'),'Claude'], [L('SPECIAL THANKS'), L('Everyone who plays with Tylor')]];
+  roll.innerHTML = '<h1 class="logo">'+(LANG==='zh' ? ZH_STATIC.logo : '<span class="b">CUBE</span> <span class="r">CHASE</span>')+'</h1>'
+    + rows.map(([h,t])=>'<h3></h3><p></p>').join('') + '<h3></h3><p class="blink"></p>';
+  const hs=roll.querySelectorAll('h3'), ps=roll.querySelectorAll('p');
+  rows.forEach(([h,t],i)=>{ hs[i].textContent=h; ps[i].textContent=t; });
+  hs[rows.length].textContent=''; ps[rows.length].textContent=L('THANKS FOR PLAYING!');
+  $('creditSkip').textContent=L('TAP OR PRESS ANY KEY TO SKIP');
+  el.hidden=false;
+  const done=()=>{ if (el.hidden) return; el.hidden=true; removeEventListener('keydown',key,true); };
+  const key=e=>{ e.preventDefault(); e.stopPropagation(); done(); };
+  addEventListener('keydown',key,true);
+  el.addEventListener('pointerdown',e=>{ e.preventDefault(); done(); });
+  roll.addEventListener('animationend',done);
+}
+/* pick a language first, then the credits roll in that language */
+function pickLanguage(){
+  const el=$('langPick'); el.hidden=false;
+  const btn = LANG==='zh' ? $('pickZh') : $('pickEn');
+  btn.classList.add('primary'); try { btn.focus({preventScroll:true}); } catch(e){}
+  const choose=l=>{ el.hidden=true; if (l!==LANG){ LANG=l; save.lang=l; persist(); applyLang(); } showCredits(); };
+  $('pickEn').onclick=()=>choose('en'); $('pickZh').onclick=()=>choose('zh');
+}
+if (!/[?&]nocredits/.test(location.search)) pickLanguage();
 if (!soundOn){ $('soundBtn').textContent='×'; $('soundBtn').setAttribute('aria-label','Sound off'); }
 requestAnimationFrame(frame);
 window.__cc = { NET, SMART, stick, get G(){return G;}, get state(){return state;}, startGame, usePower, save:()=>save };
